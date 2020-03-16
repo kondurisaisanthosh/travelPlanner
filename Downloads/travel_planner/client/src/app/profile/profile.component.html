@@ -1,0 +1,295 @@
+<div *ngIf='user && user.travelAgent===false'>
+  <br>
+  <a [routerLink]="['/login']" routerLinkActive="router-link-active" class="btn btn-danger float-right">Logout</a>
+  <h1 class="text-primary">Hi {{user.name}},</h1>
+  <button type="button" class="btn btn-info" (click)="sendRequest(user)">Become a travel agent</button>
+  <br>
+  <br>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <button class="nav-link active" (click)=changeFlag(true,false,false,false,false)>Flights</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link active" (click)=changeFlag(false,true,false,false,false)>Hotels</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" (click)=changeFlag(false,false,true,false,false)>packages</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" (click)=changeFlag(false,false,false,true,false)>Holidays</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" (click)=changeFlag(false,false,false,false,true)>My Bookings</button>
+    </li>
+  </ul>
+  <br>
+  <section *ngIf="flightFlag">
+    <input class="form-control col-sm-2 col-md-2 col-lg-2" type="search" name="sourcecitySearch"
+      [(ngModel)]="sourcecitySearch" (blur)="searchSourceSuggestion(sourcecitySearch)" placeholder="Search Source City"
+      aria-label="Search"><br>
+    <select class="form-control col-sm-8 col-md-8 col-lg-8" name="sourcecity" id="sourcecity" [(ngModel)]="sourcecity"
+      placeholder="Select from the list"><br>
+      <option *ngFor="let ctn of sourceCityArray" [(value)]="ctn.PlaceId">
+        {{ctn.PlaceName}}
+      </option>
+    </select>
+    <br>
+    <input class="form-control  col-sm-2 col-md-2 col-lg-2" type="search" name="destinationcitySearch"
+      [(ngModel)]="destinationcitySearch" (blur)="searchDestSuggestion(destinationcitySearch)"
+      placeholder="Search Destination City" aria-label="Search"><br>
+
+    <select class="form-control  col-sm-8 col-md-8 col-lg-8" name="city" id="city" [(ngModel)]="city"
+      placeholder="Select from the list">
+
+      <option *ngFor="let ctn of destCityArray" [(value)]="ctn.PlaceId">
+        {{ctn.PlaceName}}
+      </option>
+    </select>
+    <br>
+    <input class="form-control mr-sm-2" type="date" name="departureDate" [(ngModel)]="departureDate"
+      placeholder="Departure Date" aria-label="date"><br>
+    <input class="form-control mr-sm-2" type="search" name="numberdays" [(ngModel)]="numberdays"
+      placeholder="Number of days" aria-label="Search"><br>
+
+    <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+      (click)="searchFlights(sourcecity,city,departureDate)"> Lets go!</button>
+    <br>
+    <div *ngFor="let quote of quotes" class="card">
+      <div class="card-body">
+          Id: {{quote.QuoteId}}<br>
+          price: {{quote.MinPrice}}<br>
+          <span *ngFor="let flightId of quote.OutboundLeg.CarrierIds">
+            flight : {{carriersList[flightId]}}
+          </span>
+          <br>
+          DepartureTime:{{quote.OutboundLeg.DepartureDate}}    
+          <br>
+          <button type="button" class="btn-primary" (click)="selectFlight(quote.MinPrice,carriersList[quote.OutboundLeg.CarrierIds[0]],quote.OutboundLeg.DepartureDate)">
+            Select this flight</button>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="hotelFlag">
+    <div *ngFor="let restaurant of restaurants" class="card">
+        <div class="card-body">
+            <p class="card-text"><b>Name:</b>{{restaurant.name}}</p>
+            <p class="card-text"><b>Rating:</b>{{restaurant.rating}}</p>
+            <p class="card-text"><b>Address:</b>{{restaurant.formatted_address}}</p>
+            <button type="button" class="btn btn-primary" (click)="bookHotel(restaurant.name)">select this hotel</button>
+        </div>
+    </div>
+    <br>
+    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" (click)="ownBooking()"> Finish</button>
+  </section>
+
+  <section *ngIf="packageFlag">
+    <div *ngFor="let pack of packge" class="card">
+      <div class="card-header text-danger">
+        <h4><b>{{pack.packagename}}</b></h4>
+      </div>
+      <div class="card-body ">
+        <p class="card-text">source:{{pack.source}}</p>
+        <p class="card-text">Destination:{{pack.destination}}</p>
+        <p class="card-text">Flight Details:{{pack.flight}}</p>
+        <p class="card-text">price:{{pack.price}}</p>
+        <p class="card-text">date:{{pack.date}}</p>
+        <p class="card-text">Hotel Details:{{pack.hotel}}</p>
+        <p class="card-text">Days:{{pack.days}}</p>
+        <button type="button" class="btn btn-primary" (click)="bookPackage(pack)">Book this!</button>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="myBookingsFlag">
+    <p class="text-info">Self Bookings</p>
+    <div *ngFor="let selfbooking of selfbookings" class="card">
+            <div *ngIf='selfbooking.email===user.email' class="card-body">
+                <p class="card-text"><b>Source:</b>{{selfbooking.source}}</p>
+                <p class="card-text"><b>Destination:</b>{{selfbooking.destination}}</p>
+                <p class="card-text"><b>Flight :</b>{{selfbooking.flight}}</p>
+                <p class="card-text"><b>Price :</b>{{selfbooking.price}} $</p>
+                <p class="card-text"><b>Departure date:</b>{{selfbooking.dep_date}}</p>
+                <p class="card-text"><b>Hotel Details:</b>{{selfbooking.hotel}}</p>
+                <p class="card-text"><b>Number of days:</b>{{selfbooking.days}} days</p>
+            </div>
+    </div>
+    <br>
+    <hr class="style1">
+    <br>
+    <p class=text-info>Booking through package</p>
+    <div *ngFor="let booking of bookings" class="card">
+            <div *ngIf='user.email===booking.user_email' class="card-body">
+                <p class="card-text"><b>Package Name:</b>{{booking.packageInfo.packagename}} </p>
+                <p class="card-text"><b>Source:</b>{{booking.packageInfo.source}}</p>
+                <p class="card-text"><b>Destination:</b>{{booking.packageInfo.destination}}</p>
+                <p class="card-text"><b>Flight :</b>{{booking.packageInfo.flight}}</p>
+                <p class="card-text"><b>Price :</b>{{booking.packageInfo.price}} $</p>
+                <p class="card-text"><b>Departure date:</b>{{booking.packageInfo.date}}</p>
+                <p class="card-text"><b>Hotel Details:</b>{{booking.packageInfo.hotel}}</p>
+                <p class="card-text"><b>Number of days:</b>{{booking.packageInfo.days}} days</p>
+              </div>
+      <br>
+    </div>
+
+  </section>
+
+</div>
+
+
+
+
+
+
+<div *ngIf='user && user.travelAgent===true'>
+  <br>
+  <a [routerLink]=" ['/login']" routerLinkActive="router-link-active" class="btn btn-danger float-right">Logout</a>
+  <h1 class="text-primary">Hi {{user.name}},</h1>
+  <h3 class="text-success">Travel agent</h3>
+  <br>
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <button class="nav-link active" (click)=changeFlag(true,false,false,false,false)>Flights</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link active" (click)=changeFlag(false,true,false,false,false)>Hotels</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" (click)=changeFlag(false,false,true,false,false)>packages</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" (click)=changeFlag(false,false,false,true,false)>Holidays</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" (click)=changeFlag(false,false,false,false,true)>View Bookings</button>
+      </li>
+  </ul>
+  <br>
+  <section *ngIf="flightFlag">
+      <input class="form-control " type="search" name="packname"
+      [(ngModel)]="packname" placeholder="Enter Package Name"
+      aria-label="Search"><br>
+
+      <input class="form-control col-sm-2 col-md-2 col-lg-2" type="search" name="sourcecitySearch"
+        [(ngModel)]="sourcecitySearch" (blur)="searchSourceSuggestion(sourcecitySearch)" placeholder="Search Source City"
+        aria-label="Search"><br>
+      <select class="form-control col-sm-8 col-md-8 col-lg-8" name="sourcecity" id="sourcecity" [(ngModel)]="sourcecity"
+        placeholder="Select from the list"><br>
+        <option *ngFor="let ctn of sourceCityArray" [(value)]="ctn.PlaceId">
+          {{ctn.PlaceName}}
+        </option>
+      </select>
+      <br>
+      <input class="form-control  col-sm-2 col-md-2 col-lg-2" type="search" name="destinationcitySearch"
+        [(ngModel)]="destinationcitySearch" (blur)="searchDestSuggestion(destinationcitySearch)"
+        placeholder="Search Destination City" aria-label="Search"><br>
+  
+      <select class="form-control  col-sm-8 col-md-8 col-lg-8" name="city" id="city" [(ngModel)]="city"
+        placeholder="Select from the list">
+  
+        <option *ngFor="let ctn of destCityArray" [(value)]="ctn.PlaceId">
+          {{ctn.PlaceName}}
+        </option>
+      </select>
+      <br>
+      <input class="form-control mr-sm-2" type="date" name="departureDate" [(ngModel)]="departureDate"
+        placeholder="Departure Date" aria-label="date"><br>
+      <input class="form-control mr-sm-2" type="search" name="numberdays" [(ngModel)]="numberdays"
+        placeholder="Number of days" aria-label="Search"><br>
+  
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+        (click)="searchFlights(sourcecity,city,departureDate)"> Lets go!</button>
+      <br>
+          <div *ngFor="let quote of quotes" class="card">
+                <div class="card-body">
+                    Id: {{quote.QuoteId}}<br>
+                    price: {{quote.MinPrice}}<br>
+                    <span *ngFor="let flightId of quote.OutboundLeg.CarrierIds">
+                      flight : {{carriersList[flightId]}}
+                    </span>
+                    <br>
+                    DepartureTime:{{quote.OutboundLeg.DepartureDate}}   
+                    <br>     
+                    <button type="button" class="btn-primary"
+                      (click)="selectFlight(quote.MinPrice,carriersList[quote.OutboundLeg.CarrierIds[0]],quote.OutboundLeg.DepartureDate)">Select
+                      this flight</button>
+                </div>
+            </div>
+  </section>
+  
+
+  <section *ngIf="hotelFlag">
+      <div *ngFor="let restaurant of restaurants" class="card">
+        <div class="card-body">
+            <p class="card-text"><b>Name:</b>{{restaurant.name}}</p>
+            <p class="card-text"><b>Rating:</b>{{restaurant.rating}}</p>
+            <p class="card-text"><b>Address:</b>{{restaurant.formatted_address}}</p>
+            <button type="button" class="btn btn-primary" (click)="bookHotel(restaurant.name)">select this hotel</button>
+        </div>
+      </div>
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit" (click)="createPackage()"> Finish</button>
+    </section>
+
+  <section *ngIf="packageFlag">
+    <p class="text-info">My packages</p>
+    <div *ngFor="let pack of packge" class="card">
+      <div *ngIf='user.email===pack.email'>
+        <div class="card-header text-danger">
+          <h4><b>{{pack.packagename}}</b></h4>
+        </div>
+        <div class="card-body ">
+          <p class="card-text"><b>source:</b>{{pack.source}}</p>
+          <p class="card-text"><b>Destination:</b>{{pack.destination}}</p>
+          <p class="card-text"><b>Flight details:</b>{{pack.flight}}</p>
+          <p class="card-text"><b>Date:</b>{{pack.date}}</p>
+          <p class="card-text"><b> Price:</b>{{pack.price}}</p>
+          <p class="card-text"><b>Hotel Details:</b>{{pack.hotel}}</p>
+          <p class="card-text"><b>Date:</b>{{pack.date}}</p>
+          <p class="card-text"><b>Days:</b>{{pack.days}}</p>
+          <button type="button" class="btn btn-primary" (click)="viewBookings(pack)">View Bookings!</button>
+        </div>
+        <br>
+      </div>
+    </div>
+    <br>
+    <hr class="style1">
+    <br>
+    <div>
+      <p class="text-info">Available Packages</p>
+    </div>
+    <div>
+      <div *ngFor="let pack of packge" class="card">
+        <div class="card-header text-danger">
+          <h4><b>{{pack.packagename}}</b></h4>
+        </div>
+        <div class="card-body ">
+          <p class="card-text"><b>Destination:</b>{{pack.destination}}</p>
+          <p class="card-text"><b>Flight Details:</b>{{pack.flight}}</p>
+          <p class="card-text"><b>Hotel Details:</b>{{pack.hotel}}</p>
+          <p class="card-text"><b>Date:</b>{{pack.date}}</p>
+          <p class="card-text"><b>Days:</b>{{pack.days}}</p>
+        </div>
+        <br>
+      </div>
+    </div>
+  </section>
+  <section *ngIf="myBookingsFlag">
+    <p class="text-info">View Bookings</p>
+    <div *ngFor="let bookingdata of viewBookingData" class=card>
+      <div class="card-body">
+        <p class="card-text"><b>Name:</b>{{bookingdata.user_name}}</p><br>
+        <p class="card-text"><b>Email:</b>{{bookingdata.user_email}}</p>
+      </div>
+    </div>
+
+  </section>
+  <section *ngIf="holidaysFlag">
+      <input class="form-control " type="text" name="holidayname"
+      [(ngModel)]="holidayname" placeholder="Enter Holiday Name"><br>
+      <input class="form-control mr-sm-2" type="date" name="HolidaystartDate" [(ngModel)]="HolidaystartDate"
+      placeholder="Holiday Start Date" aria-label="date"><br>
+      <input class="form-control mr-sm-2" type="date" name="HolidayendDate" [(ngModel)]="HolidayendDate"
+      placeholder="Holiday end Date" aria-label="date"><br>
+      <br>
+      <button type="button" class="btn btn-primary" (click)="createHoliday()">Create Holiday</button>
+  </section>
+</div>

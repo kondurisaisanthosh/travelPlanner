@@ -1,0 +1,62 @@
+<br>
+<a [routerLink]="['/login']" routerLinkActive="router-link-active" class="btn btn-danger float-right">Logout</a>
+<br>
+
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+      <button class="nav-link active"(click)=changeFlag(true,false,false)>Requests</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" (click)=changeFlag(false,false,true) >Holidays</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link"(click)=changeFlag(false,true,false) >Packages</button>
+    </li>
+  </ul>
+  <br>
+
+ <section *ngIf="requestsFlag">
+<div class="card bg-light mb-3" *ngFor="let user of data">
+    <div class="card-header bg-transparent text-primary text-uppercase">{{user.name}}</div>
+    <div class="card-body">
+        <p>Email:{{user.email}}</p>
+        <div class="btn-group">
+            <button type="button" class="btn btn-success" (click)=approve(user)>Approve</button>
+            <button type="button" class="btn btn-danger" (click)=decline(user)>Decline</button>
+
+        </div>
+    </div>
+</div>
+ </section>
+<br>
+
+<section *ngIf="availablePackageFlag">
+<div *ngFor="let pack of packge" class="card">
+        <div class="card-header text-info">
+          <h4><b>{{pack.packagename}}</b></h4>
+        </div>
+        <div class="card-body ">
+         
+            <p class="card-text"><b>Destination:</b>{{pack.destination}}</p>
+            <p class="card-text"><b>Flight Details:</b>{{pack.flight}}</p>
+            <p class="card-text"><b>Hotel Details:</b>{{pack.hotel}}</p>
+            <p class="card-text"><b>Date:</b>{{pack.date}}</p>
+            <p class="card-text"><b>Days:</b>{{pack.days}}</p>
+            <button type="button" class="btn btn-danger" (click)=delete(pack) >DELETE</button>
+        </div>
+</div>
+</section>
+
+
+<section *ngIf="holidaysFlag">
+    <div *ngFor="let holiday of holidays" class="card">
+        <div class="card-header text-info">
+          <h4><b>{{holiday.Holidayname}}</b></h4>
+        </div>
+        <div class="card-body ">
+            <p class="card-text"><b>Start Date:</b>{{holiday.startdate}}</p>
+            <p class="card-text"><b>End Date:</b>{{holiday.enddate}}</p>
+            <button type="button" class="btn btn-danger" (click)=deleteHoliday(holiday) >DELETE</button>
+        </div>
+</div>
+</section>
